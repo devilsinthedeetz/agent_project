@@ -31,6 +31,7 @@ def generate_content(client: genai.Client, messages: list[types.Content], verbos
         raise RuntimeError("Gemini API response appears to be malformed.")
 
     if verbose:
+        print("User prompt:", messages[0].parts[0].text)
         print("Prompt tokens:", response.usage_metadata.prompt_token_count)
         print("Response tokens:", response.usage_metadata.candidates_token_count)
     print("Response:")
