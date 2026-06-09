@@ -24,6 +24,8 @@ def get_files_info(working_directory: str, directory: str = ".") -> str:
                 return f"'{directory}'"
 
 
-        return f"Results for {dir_desc(directory, target_dir, working_dir_abs)} directory: \n" + files_info(os.listdir(target_dir), target_dir)
+        return f"""Results for {dir_desc(directory, target_dir, working_dir_abs)} directory:
+{files_info(os.listdir(target_dir), target_dir)}
+"""
     except Exception as e:
         return e
