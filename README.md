@@ -43,18 +43,6 @@ Use verbose mode to print token usage:
 uv run python main.py "your prompt here" --verbose
 ```
 
-Run the calculator app directly:
-
-```bash
-python calculator/main.py "3 + 5"
-```
-
-Run calculator tests:
-
-```bash
-python calculator/tests.py
-```
-
 ## Disclaimer
 
 This is an experimental learning project and may contain incomplete code, bugs, or insecure behavior. Do not use it as a production AI agent or as a general-purpose automation tool.
