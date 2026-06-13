@@ -1,4 +1,5 @@
 import os
+import sys
 import argparse
 from dotenv import load_dotenv
 from google import genai
@@ -22,9 +23,20 @@ def main():
         types.Content(role="user", parts=[types.Part(text=args.user_prompt)])
     ]
     verbose: bool = args.verbose
-    generate_content(client, messages, verbose)
+    for i in range(20):
+        response, function_responses, final_response = generate_content(client, messages, verbose)
+        if response.candidates:
+            for candidate in response.candidates:
+                messages.append(candidate.content)
+        messages.append(types.Content(role="user", parts=function_responses))
+        if final_response:
+            break
+        if i == 20:
+            print("Maximum number of agent iterations reached.")
+            sys.exit(1)
 
-def generate_content(client: genai.Client, messages: list[types.Content], verbose: bool) -> None:
+
+def generate_content(client: genai.Client, messages: list[types.Content], verbose: bool):
     response = client.models.generate_content(
         model='gemini-2.5-flash',
         contents=messages,
@@ -34,7 +46,8 @@ def generate_content(client: genai.Client, messages: list[types.Content], verbos
     if not response.usage_metadata:
         raise RuntimeError("Gemini API response appears to be malformed.")
 
-    function_call_results = []
+    function_responses = []
+    final_response: bool = False
 
     if verbose:
         print("User prompt:", messages[0].parts[0].text)
@@ -43,9 +56,9 @@ def generate_content(client: genai.Client, messages: list[types.Content], verbos
     if not response.function_calls:
         print("Response:")
         print(response.text)
+        final_response = True
     else:
         for function_call in response.function_calls:
-            # print(f"Calling function: {function_call.name}({function_call.args})")
             function_call_result = call_function(function_call)
             if not function_call_result.parts:
                 raise Exception("function_call_result.parts is malformed")
@@ -53,9 +66,10 @@ def generate_content(client: genai.Client, messages: list[types.Content], verbos
                 raise Exception("function_call_result.parts[0].function_response is malformed")
             if not function_call_result.parts[0].function_response.response:
                 raise Exception("No function result")
-            function_call_results.append(function_call_result.parts[0])
+            function_responses.append(function_call_result.parts[0])
             if verbose:
                 print(f"-> {function_call_result.parts[0].function_response.response}")
+    return response, function_responses, final_response
 
 
 if __name__ == "__main__":
