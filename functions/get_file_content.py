@@ -3,7 +3,7 @@ from config import MAX_CHARS
 from google.genai import types
 
 schema_get_file_content = types.FunctionDeclaration(
-    name="get_files_content",
+    name="get_file_content",
     description="Read file contents from a file path relative to the working directory.",
     parameters=types.Schema(
         type=types.Type.OBJECT,

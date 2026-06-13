@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 from google import genai
 from google.genai import types
 from prompts import system_prompt
-from call_function import available_functions
+from call_function import available_functions, call_function
 
 def main():
     parser = argparse.ArgumentParser(description="Chatbot")
@@ -34,6 +34,8 @@ def generate_content(client: genai.Client, messages: list[types.Content], verbos
     if not response.usage_metadata:
         raise RuntimeError("Gemini API response appears to be malformed.")
 
+    function_call_results = []
+
     if verbose:
         print("User prompt:", messages[0].parts[0].text)
         print("Prompt tokens:", response.usage_metadata.prompt_token_count)
@@ -43,8 +45,17 @@ def generate_content(client: genai.Client, messages: list[types.Content], verbos
         print(response.text)
     else:
         for function_call in response.function_calls:
-            print(f"Calling function: {function_call.name}({function_call.args})")
-
+            # print(f"Calling function: {function_call.name}({function_call.args})")
+            function_call_result = call_function(function_call)
+            if not function_call_result.parts:
+                raise Exception("function_call_result.parts is malformed")
+            if not function_call_result.parts[0].function_response:
+                raise Exception("function_call_result.parts[0].function_response is malformed")
+            if not function_call_result.parts[0].function_response.response:
+                raise Exception("No function result")
+            function_call_results.append(function_call_result.parts[0])
+            if verbose:
+                print(f"-> {function_call_result.parts[0].function_response.response}")
 
 
 if __name__ == "__main__":
